@@ -6,6 +6,7 @@ import NavBar from './components/Navbar';
 import ComposePage from './Views/ComposePage';
 import HomePage from './Views/HomePage';
 import DetailsPage from './Views/DetailsPage';
+import AdminPage from './Views/AdminPage';
 
 
 const App: React.FC<AppProps> = (props) =>{
@@ -16,6 +17,7 @@ const App: React.FC<AppProps> = (props) =>{
 				<Route path='/' element={<HomePage />}/>
 				<Route path='/compose' element={<ComposePage />}/>
 				<Route path='/details/:blogid' element={<DetailsPage />}/>
+				<Route path='/admin/:blogid' element={<AdminPage />}/>
 			</Routes>
 		</BrowserRouter>
     )

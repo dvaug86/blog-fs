@@ -1,10 +1,15 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import type { ITag } from '../utils/types';
 
-const ComposePage: React.FC<ComposePageProps> = (props) => {
+let oldID = null;
+
+const AdminPage: React.FC<AdminPageProps> = (props) => {
+    //routing context
     const history = useNavigate();
-    //form states
+    const { blogid } = useParams();
+
+    //formstates
     const [title, setTitle] = React.useState('');
     const [content, setContent] = React.useState('');
     const [selectedTag, setSelectedTag] = React.useState('0');
@@ -20,35 +25,68 @@ const ComposePage: React.FC<ComposePageProps> = (props) => {
         })()
     }, []);
 
-    //need to add db and routes
-    const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    React.useEffect(() => {
+        (async () => {
+            const res = await fetch(`/api/blogs/${blogid}`);
+            const blog = await res.json();
+
+            const res2 = await fetch(`/api/blogtags/${blogid}`);
+            const blogtags = await res2.json();
+            oldID = blogtags[0].id
+            setTitle(blog.title);
+            setContent(blog.content);
+            setSelectedTag(blogtags[0].id);
+
+        })();
+    }, [blogid]);
+
+    const handleEdit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        console.log({ title, content })
-        const res = await fetch('/api/blogs', {
-            method: 'POST',
+
+        const res = await fetch(`/api/blogs/${blogid}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ title, content })
         });
-        const blogResult = await res.json();
+        const resultBlog = await res.json();
+        console.log(resultBlog);
+        if (oldID !== Number(selectedTag)) {
 
-        if (Number(selectedTag)) {  //can also use (selectedTag !== '0')
-                 const res2 = await fetch('/api/blogtags', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ blogid: blogResult.id, tagid: selectedTag })
-        });
-        const blogtagResult = await res2.json();
-        console.log(blogtagResult);
-
-   
+            const res2 = await fetch(`/api/blogtags/${blogid}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, content })
+            });
+            const res = await fetch(`/api/blogs/${blogid}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, content })
+            });
+            const resultBlogtag = await res2.json();
+            console.log(resultBlogtag);
         }
-
-        history(`/details/${blogResult.id}`);
+        history(`/details/${blogid}`);
     }
+
+    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        const res = await fetch(`/api/blogtags/${blogid}`, {
+            method: 'DELETE' //not properly working due to author i think
+        });
+        const res2 = await fetch(`/api/blogs/${blogid}`, {
+            method: 'DELETE' //not properly working due to author i think
+        });
+        if (res.ok && res2.ok) {
+            history('/');
+        }
+    }
+
 
     return (
         <main className="container">
@@ -66,6 +104,7 @@ const ComposePage: React.FC<ComposePageProps> = (props) => {
                             placeholder='Title'
                         // a controlled react input like above needs to have a value and onChange in this case the state of title 
                         />
+
                         <label htmlFor="selected tag">Select a Tag</label>
                         <select value={selectedTag}
                             onChange={e => setSelectedTag(e.target.value)}
@@ -81,7 +120,6 @@ const ComposePage: React.FC<ComposePageProps> = (props) => {
                         </select>
 
                         <label htmlFor="content">Content</label>
-
                         <textarea
                             value={content}
                             onChange={e => setContent(e.target.value)}
@@ -89,9 +127,12 @@ const ComposePage: React.FC<ComposePageProps> = (props) => {
                             className="form-control form-control-lg mb-2"
                             placeholder='Place your Blog content'
                         />
-
-                        <div className="d-flex justify-content-end">
-                            <button onClick={handleSubmit} className="btn btn-primary btn-lg mt-3">Submit!</button>
+                        <div className="d-flex justify-content-between align-items-center">
+                            <Link className='btn btn-outline-secondary btn-lg' to={`/details/${blogid}`}>Go Back</Link>
+                            <div>
+                                <button onClick={handleEdit} className="btn btn-primary btn-lg  mx-3">Edit!</button>
+                                <button onClick={handleDelete} className="btn btn-outline-danger btn-lg  mx-3">Delete!</button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -100,6 +141,6 @@ const ComposePage: React.FC<ComposePageProps> = (props) => {
     )
 }
 
-interface ComposePageProps { }
+interface AdminPageProps { }
 
-export default ComposePage;
+export default AdminPage;

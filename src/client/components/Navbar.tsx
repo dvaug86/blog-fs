@@ -3,10 +3,11 @@ import { NavLink } from 'react-router-dom';
 
 const NavBar: React.FC<NavBarProps> = (props) =>{
     return(
-        <nav className="nav justify-content-center shadow p-3 mb-5 ">
-            <NavLink className='mx-5 btn btn-primary' to='/'> Home</NavLink>
-            <NavLink className='mx-5 btn btn-primary' to='/compose'> Compose</NavLink>
+        <nav className="nav justify-content-center bg-light shadow p-3 mb-5 ">
+            <NavLink className= "text-dark font-weight-bold mx-5" to='/'> Home</NavLink> {/* need to figure out bootstrap issue for here*/ }
+            <NavLink className="text-dark font-weight-bold mx-5" to='/compose'> Compose</NavLink>
         </nav>
+ 
     )
 }
 
